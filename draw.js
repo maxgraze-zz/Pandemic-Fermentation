@@ -1,3 +1,4 @@
+import scroller from './scroller.js';
 
 // d3.graphScroll();
 let width = 600;
@@ -17,7 +18,7 @@ dimensions.boundedHeight =
 dimensions.height - dimensions.margin.top - dimensions.margin.bottom;
 
 const wrapper = d3
-    .select('#graphic')
+    .select('#vis')
     .append('svg')
     .attr('width', dimensions.width)
     .attr('height', dimensions.height);
@@ -43,7 +44,7 @@ let data;
 d3.json('data/fermented.json').then(dataset => {
     data = dataset;
     // createScales();
-    // setTimeout(drawInitial(), 200);
+    setTimeout(drawInitial(), 200);
 });
 
 const button = d3.select('body')
@@ -57,10 +58,18 @@ function onClick() {
 const button2 = d3.select('body')
     .append('button')
     .text('draw2');
+const button3 = d3.select('body')
+    .append('button')
+    .text('draw3');
 
 button2.node().addEventListener('click', click);
 function click() {
     draw2();
+}
+
+button3.node().addEventListener('click', clicky);
+function clicky() {
+    draw3();
 }
 
 
@@ -69,13 +78,12 @@ const updateTransition = d3.transition()
     .ease(d3.easeBackIn);
 
 
-
+function createScales() {
+    
+}
 export function drawInitial() {
-    console.log(data);
-   
+    
     let keys = Object.keys(_.groupBy(data, 'Month'));
-
-    console.log(keys);
     let dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
     const histKeys = Object.keys(dataByMonth);
 
@@ -263,7 +271,7 @@ export function draw2() {
         
     simulation
         .nodes(data)
-        .on('tick', function(d){
+        .on('tick', function(data){
             nodes
                 .attr('cx', function(d){ return d.x; })
                 .attr('cy', function(d){ return d.y; });
@@ -271,12 +279,12 @@ export function draw2() {
   
          
 
-    simulation.alpha(0.9).restart();
+    // simulation.alpha(0.9).restart();
 
 
 }
 
-export function draw3() {
+function draw3() {
 
     let keys = Object.keys(_.groupBy(data, 'Month'));
     let dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
@@ -288,16 +296,16 @@ export function draw3() {
         .domain(keys)
         .range([0, dimensions.boundedWidth])
         .padding(0.1);
+        
     let circle = bounds.selectAll('circle')
-        .enter()
-        .merge(circle)
+        // .enter()
+        // .merge(circle)
         .transition().duration(500).delay(100)
         .attr('fill', 'black')
-        .attr('r', 3)
-        .attr('cx', (d, i) => histXScale(histYAccessor(d)) + 5)
-        .attr('cy', (d, i) => i * 5.2 + 30);
-
-    var simulation = d3.forceSimulation()
+        .attr('r', 3);
+            // .attr('cx', (d, i) => histXScale(histYAccessor(d)) + 5)
+            // .attr('cy', (d, i) => i * 5.2 + 30);
+    var simulation = d3.forceSimulation(data)
         .force('center', d3.forceCenter().x(width / 2).y(dimensions.height / 2)) // Attraction to the center of the svg area
         .force('charge', d3.forceManyBody().strength(0.5)) // Nodes are attracted one each other of value is > 0
         .force('collide', d3.forceCollide().strength(.01).radius(30).iterations(1)); // Force that avoids circle overlapping
@@ -306,17 +314,46 @@ export function draw3() {
     simulation
         .nodes(data)
         .on('tick', function(d){
-            nodes
+            circle
                 .attr('cx', function(d){ return d.x; })
                 .attr('cy', function(d){ return d.y; });
         });
          
 }
+
+
+
 let activationFunctions = [
+    drawInitial,
     draw2,
     draw3,
 ];
 
+let scroll = scroller()
+    .container(d3.select('#graphic'));
+scroll();
+
+let lastIndex, activeIndex = 0;
+
+scroll.on('active', function(index){
+    d3.selectAll('.step')
+        .transition().duration(500)
+        .style('opacity', function(d, i) {return i === index ? 1 : 0.1;});
+    
+    activeIndex = index;
+    let sign = (activeIndex - lastIndex) < 0 ? -1 : 1; 
+    let scrolledSections = d3.range(lastIndex + sign, activeIndex + sign, sign);
+    scrolledSections.forEach(i => {
+        activationFunctions[i]();
+    });
+    lastIndex = activeIndex;
+
+});
+
+scroll.on('progress', function(index, progress){
+    if (index == 2 & progress > 0.7){
+    }
+});
 
 // `window.addEventListener("scroll", () => {
 //     console.log(window.scrollY)

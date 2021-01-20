@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="styles.css"></link>
+
+    <title>Document</title>
+</head>
+<body>
+
+    <main>
+
+        <section id='intro'>
+          <h1 class='intro__hed'>Sticky Side Example</h1>
+          <p class='intro__dek'>
+            Start scrolling to see how it works.
+          </p>
+        </section>
+        
+        <section id='container'>
+        
+          <article>
+            <div id='change1' data-step='1'>
+              <p>STEP 1</p>
+            </div>
+            <div id='change2' data-step='2'>
+              <p>STEP 2</p>
+            </div>
+            <div id='change3' data-step='3'>
+              <p>STEP 3</p>
+            </div>
+            <div class='step' data-step='4'>
+              <p>STEP 4</p>
+            </div>
+          </article>
+        
+          <figure>
+              <div id="stickyImage"></div>
+            <p>0</p>
+          </figure>
+        </section>
+        </main>
+</body>
+<script type="text/javascript" src="d3.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
+<script src="https://unpkg.com/intersection-observer"></script>
+<script src="https://unpkg.com/stickyfilljs@2.0.5/dist/stickyfill.js"></script>
+<script src="https://unpkg.com/enter-view@1.0.0/enter-view.min.js"></script>
+<script src="https://unpkg.com/scrollama" ></script>
+<script src="data/fermented.json"></script>
+<script src="practice.js" type="module" ></script>
+<script src="chart.js" type="module" ></script>
+  <style></style>
+</html>
