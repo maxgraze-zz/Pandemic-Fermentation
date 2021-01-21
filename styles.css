@@ -2,7 +2,7 @@
 inline block allows us to display #sections and #vis side-by-side 
 step margin ensures we have ennough room 
 */
-
+/* 
 #scrolly {
   position: relative;
   display: -webkit-box;
@@ -53,7 +53,7 @@ figure p {
   margin: 0 auto 2rem auto;
   background-color: #3b3b3b;
   color: #fff;
-}
+} */
 
 /* #scroll {
   position: relative;
@@ -102,7 +102,7 @@ figure p {
   opacity: 1;
 } */
 
-/* #sections {
+#sections {
   position: relative;
   display: inline-block;
   width: 250px;
@@ -124,4 +124,4 @@ figure p {
   height: 600px;
   width: 600px;
   background-color: #ddd;
-} */
+}

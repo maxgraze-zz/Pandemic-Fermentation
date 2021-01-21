@@ -50,7 +50,7 @@ export default function scroller(){
     }
   //The code here adds an event listener to the dispatcher.
     scroll.container = function(value) {
-        if (arguments.legth === 0){
+        if (arguments.length === 0){
             return container;
         }
         container = value;

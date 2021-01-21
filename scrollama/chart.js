@@ -1,4 +1,4 @@
-
+import scroller from 'scroller.js';
 // d3.graphScroll();
 let width = 600;
 let dimensions = {

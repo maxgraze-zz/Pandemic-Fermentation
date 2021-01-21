@@ -1,5 +1,8 @@
 import scroller from './scroller.js';
 
+let simulation, nodes;
+let histYScale, histXScale, histYAccessor, histXAccessor, colorAccessor;
+let keys, dataByMonth;
 // d3.graphScroll();
 let width = 600;
 let dimensions = {
@@ -43,53 +46,45 @@ const colorScale = d3.scaleOrdinal(colors, type);
 let data;
 d3.json('data/fermented.json').then(dataset => {
     data = dataset;
-    // createScales();
+    processData();
+    createScales();
     setTimeout(drawInitial(), 200);
 });
 
-const button = d3.select('body')
-    .append('button')
-    .text('Change');
-
-button.node().addEventListener('click', onClick);
-function onClick() {
-    drawHistoDots();
-}
-const button2 = d3.select('body')
-    .append('button')
-    .text('draw2');
-const button3 = d3.select('body')
-    .append('button')
-    .text('draw3');
-
-button2.node().addEventListener('click', click);
-function click() {
-    draw2();
-}
-
-button3.node().addEventListener('click', clicky);
-function clicky() {
-    draw3();
-}
 
 
 const updateTransition = d3.transition()
     .duration(600)
     .ease(d3.easeBackIn);
 
-
+function processData() {
+    keys = Object.keys(_.groupBy(data, 'Month'));
+    dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
+}
 function createScales() {
     
-}
-export function drawInitial() {
+    histYAccessor = d => d.value.length;
+    histXAccessor = d => d.key;
+    colorAccessor = d => d.Type;
+            
+    histXScale = d3.scaleBand()
+        .domain(keys)
+        .range([0, dimensions.boundedWidth])
+        .padding(0.1);
+        
+    histYScale = d3.scaleLinear()
+        .domain([0, 20])
+        .range([dimensions.boundedHeight, 0]);
     
+}
+    
+    
+export function drawInitial() {
     let keys = Object.keys(_.groupBy(data, 'Month'));
     let dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
     const histKeys = Object.keys(dataByMonth);
-
-    const colorScale = d3.scaleOrdinal(type, colors);
-   
-    
+            
+        
         // .style('transform', `translate(${dimensions.margin.left}px, 
         //     ${dimensions.margin.top}px`);
         //Histogram function    // const histXAccessor = d => d.key;
@@ -112,6 +107,7 @@ export function drawInitial() {
 
 
     const xAxis = bounds.append('g')
+        .attr('class', 'x-axis')
         .call(xAxisGenerator)
         .style('transform', `translateY(${dimensions.boundedHeight}px)`);
 
@@ -126,7 +122,7 @@ export function drawInitial() {
     //     .data(bins).join('g');
 
     // const barPadding = 1;
-    let simulation, nodes;
+    // let simulation, nodes;
     
     simulation = d3.forceSimulation(data);
     
@@ -166,34 +162,11 @@ export function drawInitial() {
     // const histAxis = d3.axisBottom(monthScale);
 }
 
-export function drawHistoDots() {
+export function draw1() {
 
-    let keys = Object.keys(_.groupBy(data, 'Month'));
-    let dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
-
-    const histYAccessor = d => d.value.length;
-    const histXAccessor = d => d.key;
-    const colorAccessor = d => d.value.Type;
-        
-    const histXScale = d3.scaleBand()
-        .domain(keys)
-        .range([0, dimensions.boundedWidth])
-        .padding(0.1);
-    
-    const histYScale = d3.scaleLinear()
-        .domain([0, 20])
-        .range([dimensions.boundedHeight, 0]);
 
     // console.log(colorObj[colorAccessor(dataByMonth[0])]);
-    console.log(dataByMonth[0].value[2]);
-    const xAxisGenerator = d3.axisBottom().scale(histXScale);
-    const yAxisGenerator = d3.axisLeft().scale(histYScale);
-
-
-    const xAxis = bounds.append('g')
-        .call(xAxisGenerator)
-        .style('transform', `translateY(${dimensions.boundedHeight}px)`);
-
+ 
     bounds.selectAll('rect').transition().duration(200).remove();
     const groups = bounds.selectAll('.groups')
         .data(dataByMonth)
@@ -203,7 +176,6 @@ export function drawHistoDots() {
             return 'translate(' + histXScale(histXAccessor(d)) + '.0)';
         });
         
-    console.log(colorScale(colorAccessor(dataByMonth[2])));
     const dots = groups.selectAll('circle')
         .data(d => d3.range(1, histYAccessor(d) + 1))
         .enter().append('circle')
@@ -213,69 +185,46 @@ export function drawHistoDots() {
         .attr('cy', function(d) {
             return histYScale(d);
         })
-        .attr('fill', d => colorObj[colorAccessor(d)])
+        .attr('fill', 'black')
+        // .attr('fill', d => colorObj[colorAccessor(d)])
 
-        .style('opacity', .5)
+        .style('opacity', .5);
 
 
-        .data(d => d3.range(histYAccessor(d) + 1));
-
-    // const binData = d3.bins().domain([0, 1])(dataByMonth);
-        // Selection of all the circles 
-    // console.log((d3.range(histYAccessor(dataByMonth[1])))); 
-    // let nodes = bounds
-    //     .append('g')
-    //     .selectAll('circle')
-    //     .data(dataByMonth)
-    //     // .enter()
-    //     // .append('circle')
-    //     // .data(d => d3.range(histYAccessor(d) + 1))
-    //     .join('circle')
-    //     .attr('class', 'histcircles')
-    //     .attr('fill', d => colorAccessor(colorAccessor(d)))
-    //     .attr('r', 5)
-    //     .attr('cx', d => histXScale(histXAccessor(d)))
-    //     .attr('cy', d => histYScale(histYAccessor(d)))
-    //     // .attr('cx', dimensions.boundedWidth / 2)
-    //     // .attr('cy', dimensions.boundedHeight / 2)
-    //     .attr('opacity', 0.8);
+        // .data(d => d3.range(histYAccessor(d) + 1));
 
 }
 
 export function draw2() {
 
-    let keys = Object.keys(_.groupBy(data, 'Month'));
-    let dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
+    bounds.selectAll('.x-axis').transition().remove();
 
-    const histYAccessor = d => d.Month;
-    const colorAccessor = d => d.Type;
-
-    const histXScale = d3.scaleBand()
-        .domain(keys)
-        .range([0, dimensions.boundedWidth])
-        .padding(0.1);
-
-    var simulation = d3.forceSimulation()
-        .force('center', d3.forceCenter().x(width / 2).y(dimensions.height / 2)) // Attraction to the center of the svg area
-        .force('charge', d3.forceManyBody().strength(0.5)) // Nodes are attracted one each other of value is > 0
-        .force('collide', d3.forceCollide().strength(.01).radius(30).iterations(1)); // Force that avoids circle overlapping
+    // var simulation = d3.forceSimulation()
+    //     .force('center', d3.forceCenter().x(width / 2).y(dimensions.height / 2)) // Attraction to the center of the svg area
+    //     .force('charge', d3.forceManyBody().strength(0.5)) // Nodes are attracted one each other of value is > 0
+    //     .force('collide', d3.forceCollide().strength(.01).radius(30).iterations(1)); // Force that avoids circle overlapping
       
 
-    let nodes = bounds.selectAll('circle')
+    let circle = bounds.selectAll('circle')
         .data(data)
         .transition().duration(500).delay(100)
         .attr('fill', d => colorObj[colorAccessor(d)])
+        .attr('stroke', '#000')
+        .transition()
+        .attr('r', d => d.Length * 3)
+
+
         ;
         // Apply these forces to the nodes and update their positions.
         // Once the force algorithm is happy with positions ('alpha' value is low enough), simulations will stop.
         
-    simulation
-        .nodes(data)
-        .on('tick', function(data){
-            nodes
-                .attr('cx', function(d){ return d.x; })
-                .attr('cy', function(d){ return d.y; });
-        });
+    // simulation
+    //     .nodes(data)
+    //     .on('tick', function(data){
+    //         nodes
+    //             .attr('cx', function(d){ return d.x; })
+    //             .attr('cy', function(d){ return d.y; });
+    //     });
   
          
 
@@ -286,45 +235,60 @@ export function draw2() {
 
 function draw3() {
 
-    let keys = Object.keys(_.groupBy(data, 'Month'));
-    let dataByMonth = Array.from(d3.group(data, d => d.Month), ([key, value]) => ({ key, value }));
+    const xAccessor = d => d.Month;
+    simulation = d3.forceSimulation(data)
+        .force('center', d3.forceCenter().x(dimensions.boundedWidth / 2).y(dimensions.boundedHeight / 2)) // Attraction to the center of the svg area
+     // .force("x",d3.forceX().strength(0.2).x(d => histXScale(histYAccessor(d))))
+        // .force('x', d3.forceX(d => histXScale(xAccessor(d))))
 
-    const histYAccessor = d => d.Month;
-    const colorAccessor = d => d.Type;
+        // .force('y', d3.forceY(d => 0))
 
-    const histXScale = d3.scaleBand()
-        .domain(keys)
-        .range([0, dimensions.boundedWidth])
-        .padding(0.1);
-        
-    let circle = bounds.selectAll('circle')
-        // .enter()
-        // .merge(circle)
-        .transition().duration(500).delay(100)
-        .attr('fill', 'black')
-        .attr('r', 3);
-            // .attr('cx', (d, i) => histXScale(histYAccessor(d)) + 5)
-            // .attr('cy', (d, i) => i * 5.2 + 30);
-    var simulation = d3.forceSimulation(data)
-        .force('center', d3.forceCenter().x(width / 2).y(dimensions.height / 2)) // Attraction to the center of the svg area
         .force('charge', d3.forceManyBody().strength(0.5)) // Nodes are attracted one each other of value is > 0
-        .force('collide', d3.forceCollide().strength(.01).radius(30).iterations(1)); // Force that avoids circle overlapping
+        .force('collide', d3.forceCollide().strength(.01).radius(20).iterations(1)) // Force that avoids circle overlapping
+        .stop()
+        .tick(140);
+
+    let circle = bounds.selectAll('circle')
+        // .data(data)
+        // .join('circle')
+        .join('circle')
+        .transition().duration(500).delay(100)
+        //.attr('fill', 'black')
+        .attr('fill', d => colorObj[colorAccessor(d)])
+        .attr('r', d => d.Length * 3)
+				// this uses the x/y attributes set on data by forceSimulation
+        .attr('cx', (d, i) => d.x)
+        .attr('cy', (d, i) => d.y);
+
+    // simulation.stop();
+    // let circle = bounds.selectAll('circle')
+    //     // .enter()
+    //     // .merge(circle)
+    //     .transition().duration(500).delay(100)
+    //     .attr('fill', 'black')
+    //     .attr('r', 3);
+    //         // .attr('cx', (d, i) => histXScale(histYAccessor(d)) + 5)
+    //         // .attr('cy', (d, i) => i * 5.2 + 30);
+    // var simulation = d3.forceSimulation(data)
+    //     .force('center', d3.forceCenter().x(width / 2).y(dimensions.height / 2)) // Attraction to the center of the svg area
+    //     .force('charge', d3.forceManyBody().strength(0.5)) // Nodes are attracted one each other of value is > 0
+    //     .force('collide', d3.forceCollide().strength(.01).radius(30).iterations(1)); // Force that avoids circle overlapping
       
         
-    simulation
-        .nodes(data)
-        .on('tick', function(d){
-            circle
-                .attr('cx', function(d){ return d.x; })
-                .attr('cy', function(d){ return d.y; });
-        });
+    // simulation
+    //     .nodes(data)
+    //     .on('tick', function(d){
+    //         circle
+    //             .attr('cx', function(d){ return d.x; })
+    //             .attr('cy', function(d){ return d.y; });
+    //     });
          
 }
 
 
 
 let activationFunctions = [
-    drawInitial,
+    draw1,
     draw2,
     draw3,
 ];
@@ -335,19 +299,19 @@ scroll();
 
 let lastIndex, activeIndex = 0;
 
+
 scroll.on('active', function(index){
     d3.selectAll('.step')
         .transition().duration(500)
         .style('opacity', function(d, i) {return i === index ? 1 : 0.1;});
-    
     activeIndex = index;
     let sign = (activeIndex - lastIndex) < 0 ? -1 : 1; 
     let scrolledSections = d3.range(lastIndex + sign, activeIndex + sign, sign);
     scrolledSections.forEach(i => {
-        activationFunctions[i]();
+        var funName = activationFunctions[i - 1];
+        funName();
     });
     lastIndex = activeIndex;
-
 });
 
 scroll.on('progress', function(index, progress){
